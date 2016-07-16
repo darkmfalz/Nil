@@ -16,6 +16,16 @@ public class Commander {
 				case "select":
 					selectLanguage(inputTok[1]);
 					break;
+				case "read":
+					//Read from file and update dictionary
+					if(!Dictionary.isConnected())
+						break;
+					break;
+				case "parse":
+					//Parse sentence from console
+					if(!Dictionary.isConnected())
+						break;
+					break;
 				default:
 			}
 			

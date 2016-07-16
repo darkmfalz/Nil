@@ -15,9 +15,16 @@ public class Dictionary {
 			c = DriverManager.getConnection("jdbc:sqlite:" + dictName + ".db");
 		} catch (Exception e) {
 			e.printStackTrace();
+			System.err.println(c);
 			System.exit(0);
 		}
 		
 	}
 	
+	public static boolean isConnected(){
+		
+		return connected;
+		
+	}
+
 }
