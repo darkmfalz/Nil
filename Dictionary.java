@@ -5,18 +5,27 @@ import java.sql.*;
 public class Dictionary {
 
 	private static Connection c;
+	private static String dictName;
 	private static boolean connected;
 	
 	public static void connect(String dictName){
 		
+		Dictionary.dictName = dictName;
 		c = null;
-		try {
+		try{
+			
 			Class.forName("org.sqlite.JDBC");
 			c = DriverManager.getConnection("jdbc:sqlite:" + dictName + ".db");
-		} catch (Exception e) {
+			connected = true;
+			
+		}
+		catch(Exception e){
+			
 			e.printStackTrace();
 			System.err.println(c);
+			connected = false;
 			System.exit(0);
+			
 		}
 		
 	}
@@ -24,6 +33,12 @@ public class Dictionary {
 	public static boolean isConnected(){
 		
 		return connected;
+		
+	}
+	
+	public static String getDictName(){
+		
+		return dictName;
 		
 	}
 
