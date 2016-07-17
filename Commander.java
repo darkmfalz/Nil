@@ -21,12 +21,6 @@ public class Commander {
 					break;
 				case "read":
 					//Read from file and update dictionary
-					if(!Dictionary.isConnected()){
-						
-						System.err.println("No dictionary is connected.");
-						break;
-						
-					}
 					String inputFile = inputTok[1];
 					if(!inputFile.substring(inputFile.length()-4).equals(".txt"))
 						inputFile = inputFile + ".txt";
@@ -40,12 +34,6 @@ public class Commander {
 					break;
 				case "parse":
 					//Parse sentence from console
-					if(!Dictionary.isConnected()){
-						
-						System.err.println("No dictionary is connected.");
-						break;
-						
-					}
 					break;
 				default:
 			}
@@ -55,8 +43,7 @@ public class Commander {
 		}
 		
 		scan.close();
-		if(Dictionary.isConnected())
-			Dictionary.dropTable();
+		Dictionary.dropTable();
 		
 	}
 

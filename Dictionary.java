@@ -4,45 +4,31 @@ import java.sql.*;
 
 public class Dictionary {
 
-	private static Connection c;
-	private static Statement stmt;
 	private static String dictName;
-	private static boolean connected;
 	
 	public static void connect(String dictName){
 		
-		Dictionary.dictName = dictName;
-		c = null;
-		stmt = null;
 		try{
 			
 			Class.forName("org.sqlite.JDBC");
-			c = DriverManager.getConnection("jdbc:sqlite:" + dictName + ".db");
-			connected = true;
+			Connection c = DriverManager.getConnection("jdbc:sqlite:" + dictName + ".db");
 			System.out.println("Connected successfully!");
 			
-			stmt = c.createStatement();
+			Statement stmt = c.createStatement();
 		    String sql = "create table if not exists Words (word text PRIMARY KEY, frequency real)";
 		    stmt.executeUpdate(sql);
 		    stmt.close();
 		    c.close();
 		    System.out.println("Connected table successfully!");
+		    Dictionary.dictName = dictName;
 			
 		}
 		catch(Exception e){
 			
 			e.printStackTrace();
-			System.err.println(c);
-			connected = false;
 			System.exit(0);
 			
 		}
-		
-	}
-	
-	public static boolean isConnected(){
-		
-		return connected;
 		
 	}
 	
@@ -66,11 +52,11 @@ public class Dictionary {
 		
 		try{
 			Class.forName("org.sqlite.JDBC");
-			c = DriverManager.getConnection("jdbc:sqlite:" + dictName + ".db");
-			PreparedStatement pstmt = c.prepareStatement("INSERT INTO Words VALUES (?,1)");
-			pstmt.setString(1, word);
-		    pstmt.executeUpdate();
-		    pstmt.close();
+			Connection c = DriverManager.getConnection("jdbc:sqlite:" + dictName + ".db");
+			PreparedStatement stmt = c.prepareStatement("INSERT INTO Words VALUES (?,1)");
+			stmt.setString(1, word);
+		    stmt.executeUpdate();
+		    stmt.close();
 		    c.close();
 		}
 		catch(Exception e){
@@ -84,22 +70,22 @@ public class Dictionary {
 		
 		try{
 			Class.forName("org.sqlite.JDBC");
-			c = DriverManager.getConnection("jdbc:sqlite:" + dictName + ".db");
-			PreparedStatement pstmt = c.prepareStatement("SELECT * from Words where word=?");
-			pstmt.setString(1, word);
-			ResultSet rset = pstmt.executeQuery();
+			Connection c = DriverManager.getConnection("jdbc:sqlite:" + dictName + ".db");
+			PreparedStatement stmt = c.prepareStatement("SELECT * from Words where word=?");
+			stmt.setString(1, word);
+			ResultSet rset = stmt.executeQuery();
 			if(rset.next()){
 				
 				int frequency = rset.getInt("frequency");
-				pstmt.close();
+				stmt.close();
 				frequency++;
-				pstmt = c.prepareStatement("UPDATE Words set frequency=? where word=?");
-				pstmt.setInt(1, frequency);
-				pstmt.setString(2, word);
-				pstmt.executeUpdate();
+				stmt = c.prepareStatement("UPDATE Words set frequency=? where word=?");
+				stmt.setInt(1, frequency);
+				stmt.setString(2, word);
+				stmt.executeUpdate();
 				
 			}
-			pstmt.close();
+			stmt.close();
 			c.close();
 		}
 		catch(Exception e){
@@ -113,12 +99,12 @@ public class Dictionary {
 		
 		try{
 			Class.forName("org.sqlite.JDBC");
-			c = DriverManager.getConnection("jdbc:sqlite:" + dictName + ".db");
-			PreparedStatement pstmt = c.prepareStatement("SELECT * from Words where word=?");
-			pstmt.setString(1, word);
-			ResultSet rset = pstmt.executeQuery();
+			Connection c = DriverManager.getConnection("jdbc:sqlite:" + dictName + ".db");
+			PreparedStatement stmt = c.prepareStatement("SELECT * from Words where word=?");
+			stmt.setString(1, word);
+			ResultSet rset = stmt.executeQuery();
 			boolean inDict = rset.next();
-			pstmt.close();
+			stmt.close();
 			c.close();
 			return inDict;
 		}
@@ -134,8 +120,8 @@ public class Dictionary {
 	public static void printTable() throws Exception{
 		
 		Class.forName("org.sqlite.JDBC");
-		c = DriverManager.getConnection("jdbc:sqlite:" + dictName + ".db");
-		stmt = c.createStatement();
+		Connection c = DriverManager.getConnection("jdbc:sqlite:" + dictName + ".db");
+		Statement stmt = c.createStatement();
 		ResultSet rset = stmt.executeQuery("select * from Words");
 		ResultSetMetaData rsmd = rset.getMetaData();
 		
@@ -159,8 +145,8 @@ public class Dictionary {
 	public static void dropTable() throws Exception{
 		
 		Class.forName("org.sqlite.JDBC");
-		c = DriverManager.getConnection("jdbc:sqlite:" + dictName + ".db");
-		stmt = c.createStatement();
+		Connection c = DriverManager.getConnection("jdbc:sqlite:" + dictName + ".db");
+		Statement stmt = c.createStatement();
 		stmt.executeUpdate("drop table Words");
 		stmt.close();
 		c.close();

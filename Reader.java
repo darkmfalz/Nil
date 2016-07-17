@@ -4,13 +4,6 @@ public class Reader {
 	
 	public static void read(String corpus) throws Exception{
 		
-		if(!Dictionary.isConnected()){
-			
-			System.err.println("No dictionary is connected.");
-			return;
-			
-		}
-		
 		corpus = preprocess(corpus);
 		
 		String[] sentences = corpus.split(" [.!?] ");
