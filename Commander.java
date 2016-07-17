@@ -69,13 +69,12 @@ public class Commander {
 		
 		FileReader inputReader = new FileReader(inputFile);
 		BufferedReader bufferedReader = new BufferedReader(inputReader);
+		String file = "";
 		String line;
 		
-		while ((line = bufferedReader.readLine()) != null){
-			
-			System.out.println(line);
-			
-		}
+		while((line = bufferedReader.readLine()) != null)
+			file = file.concat(line);
+		Reader.read(file);
 		
 		bufferedReader.close();
 		
