@@ -2,18 +2,17 @@ package nil;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.Scanner;
 
 public class Commander {
 
-	public static void main(String[] args){
+	public static void main(String[] args) throws Exception{
 		
 		Scanner scan = new Scanner(System.in);
 		String input = scan.nextLine();
 		while(!input.toLowerCase().equals("exit")){
 			
-			String[] inputTok = input.split(" ");
+			String[] inputTok = input.split("[\\s]+");
 			
 			switch(inputTok[0].toLowerCase()){
 				case "select":
@@ -34,7 +33,7 @@ public class Commander {
 					try{
 						read(inputFile);
 					}
-					catch(IOException e){
+					catch(Exception e){
 						System.err.println("Could not read " + inputFile);
 						e.printStackTrace();
 					}
@@ -56,6 +55,8 @@ public class Commander {
 		}
 		
 		scan.close();
+		if(Dictionary.isConnected())
+			Dictionary.dropTable();
 		
 	}
 
@@ -65,7 +66,7 @@ public class Commander {
 		
 	}
 	
-	private static void read(String inputFile) throws IOException{
+	private static void read(String inputFile) throws Exception{
 		
 		FileReader inputReader = new FileReader(inputFile);
 		BufferedReader bufferedReader = new BufferedReader(inputReader);
