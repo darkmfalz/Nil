@@ -1,5 +1,7 @@
 package nil;
 
+import java.util.Arrays;
+
 public class Reader {
 	
 	public static void read(String corpus) throws Exception{
@@ -10,12 +12,18 @@ public class Reader {
 		for(int i = 0; i < sentences.length; i++){
 			
 			String[] words = sentences[i].split("[\\s]+");
-			for(int j = 0; j < words.length; j++)
-				Dictionary.insertWord(words[j].toLowerCase());
+			for(int j = 0; j < words.length; j++){
+				
+				Dictionary.insertWord(words[j].toLowerCase(), sentences[i].toLowerCase() + " . ");
+				
+			}
 			
 		}
 		
-		Dictionary.printTable();
+		//Tagger.brownCluster(corpus);
+		//Dictionary.printTable();
+		//System.out.println(Dictionary.vocabSize());
+		System.out.println(Arrays.toString(Dictionary.mostFreqWordsInit(500)));
 		
 	}
 	

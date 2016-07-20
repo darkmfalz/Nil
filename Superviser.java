@@ -39,6 +39,7 @@ public static void main(String[] args) throws IOException{
 		//2081 clusters by this count
 			//However these clusters can get very specific
 		//8 by conventional knowledge
+			//But these are non-specific and do not include punctuation
 		
 	}
 	
