@@ -13,8 +13,6 @@ public class Dictionary {
 			
 			Class.forName("org.sqlite.JDBC");
 			Connection c = DriverManager.getConnection("jdbc:sqlite:" + dictName + ".db");
-			System.out.println("Connected successfully!");
-			
 			Statement stmt = c.createStatement();
 		    String sql = "create table if not exists Words (word text PRIMARY KEY, pos text, frequency real, sentences text, context text)";
 		    stmt.executeUpdate(sql);
@@ -24,7 +22,7 @@ public class Dictionary {
 		    stmt.executeUpdate(sql);
 		    stmt.close();
 		    c.close();
-		    System.out.println("Connected table successfully!");
+		    System.out.println("Connected database successfully!");
 		    Dictionary.dictName = dictName;
 			
 		}

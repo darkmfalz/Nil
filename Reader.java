@@ -5,6 +5,7 @@ public class Reader {
 	public static void read(String corpus) throws Exception{
 		
 		corpus = preprocess(corpus);
+		System.out.println("Preprocessed corpus succesfully!");
 		
 		String[] sentences = corpus.split(" [.!?] ");
 		for(int i = 0; i < sentences.length; i++){
@@ -17,6 +18,7 @@ public class Reader {
 			}
 			
 		}
+		System.out.println("Inserted words into database succesfully!");
 		
 		//Tagger.brownCluster(corpus);
 		//Dictionary.printTable();
