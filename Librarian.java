@@ -21,15 +21,15 @@ public class Librarian {
 			Statement stmt = c.createStatement();
 		    String sql = "create table if not exists Words (word text PRIMARY KEY, pos text, frequency real, sentences text, context text)";
 		    stmt.executeUpdate(sql);
-		    stmt.close();
+		    //stmt.close();
 		    
-		    stmt = c.createStatement();
+		    //stmt = c.createStatement();
 		    sql = "create table if not exists Rank (rank real PRIMARY KEY, word text)";
 		    stmt.executeUpdate(sql);
-		    stmt.close();
+		    //stmt.close();
 		    
-		    stmt = c.createStatement();
-		    sql = "create table if not exists Corpus (index real PRIMARY KEY, sentence text)";
+		    //stmt = c.createStatement();
+		    sql = "create table if not exists Corpus (dex real PRIMARY KEY, sentence text)";
 		    stmt.executeUpdate(sql);
 		    stmt.close();
 		    
@@ -93,7 +93,7 @@ public class Librarian {
 				for(int j = 0; j < words.length; j++){
 					
 					//Check if word is in database
-					word = words[i];
+					word = words[j];
 					stmt = c.prepareStatement("SELECT * from Words where word=?");
 					stmt.setString(1, word);
 					rset = stmt.executeQuery();
@@ -312,7 +312,7 @@ public class Librarian {
 			String sentences = "";
 			for(int j = 0; j < sentenceIndices.length; j++){
 				
-				PreparedStatement pstmt = c.prepareStatement("SELECT * from Corpus where index=?");
+				PreparedStatement pstmt = c.prepareStatement("SELECT * from Corpus where dex=?");
 				pstmt.setString(1, sentenceIndices[j]);
 				rset = pstmt.executeQuery();
 				if(rset.next())
