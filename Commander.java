@@ -9,6 +9,7 @@ public class Commander {
 	public static void main(String[] args) throws Exception{
 		
 		Scanner scan = new Scanner(System.in);
+		System.out.print("input: ");
 		String input = scan.nextLine();
 		while(!input.toLowerCase().equals("exit")){
 			
@@ -32,18 +33,22 @@ public class Commander {
 						e.printStackTrace();
 					}
 					break;
+				case "tag":
+					Tagger.brownCluster();
+					break;
 				case "parse":
 					//Parse sentence from console
 					break;
 				default:
 			}
 			
+			System.out.print("input: ");
 			input = scan.nextLine();
 			
 		}
 		
 		scan.close();
-		Dictionary.dropTable();
+		//Dictionary.dropTable();
 		
 	}
 

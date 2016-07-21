@@ -1,7 +1,5 @@
 package nil;
 
-import java.util.Arrays;
-
 public class Reader {
 	
 	public static void read(String corpus) throws Exception{
@@ -23,7 +21,6 @@ public class Reader {
 		//Tagger.brownCluster(corpus);
 		//Dictionary.printTable();
 		//System.out.println(Dictionary.vocabSize());
-		System.out.println(Arrays.toString(Dictionary.mostFreqWordsInit(500)));
 		
 	}
 	

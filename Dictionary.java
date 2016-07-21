@@ -1,6 +1,7 @@
 package nil;
 
 import java.sql.*;
+import java.util.Arrays;
 
 public class Dictionary {
 
@@ -47,6 +48,8 @@ public class Dictionary {
 		
 		//MUST CLEAN UP TO ALLOW WORDS MULTIPLE PARTS OF SPEECH
 		
+		//System.out.println(word  + ": " + sentence);
+		
 		if(wordInDictionary(word))
 			updateWordFrequency(word, sentence);
 		else
@@ -62,7 +65,7 @@ public class Dictionary {
 			PreparedStatement stmt = c.prepareStatement("INSERT INTO Words VALUES (?,?,1,?,NULL)");
 			stmt.setString(1, word);
 			stmt.setString(2, word);
-			stmt.setString(3, sentence);
+			stmt.setString(3, sentence + " . ");
 		    stmt.executeUpdate();
 		    stmt.close();
 		    c.close();
@@ -82,13 +85,13 @@ public class Dictionary {
 			PreparedStatement stmt = c.prepareStatement("SELECT * from Words where word=?");
 			stmt.setString(1, word);
 			ResultSet rset = stmt.executeQuery();
-			if(rset.next()){
+			if(rset.next() && !word.matches("[\\.!?\\-;:,'\"\\(\\)]+|<[\\w]+>")){
 				
 				int frequency = rset.getInt("frequency");
-				sentence = rset.getString("sentences") + " " + sentence;
+				sentence = rset.getString("sentences") + sentence + " . ";
 				stmt.close();
 				frequency++;
-				stmt = c.prepareStatement("UPDATE Words set frequency=? and sentences=? where word=?");
+				stmt = c.prepareStatement("UPDATE Words set frequency=? , sentences=? where word=?");
 				stmt.setInt(1, frequency);
 				stmt.setString(2, sentence);
 				stmt.setString(3, word);
@@ -179,11 +182,12 @@ public class Dictionary {
 		try{
 			Class.forName("org.sqlite.JDBC");
 			Connection c = DriverManager.getConnection("jdbc:sqlite:" + dictName + ".db");
-			PreparedStatement stmt = c.prepareStatement("SELECT COUNT(*) from Words");
+			PreparedStatement stmt = c.prepareStatement("SELECT word from Words");
 			ResultSet rset = stmt.executeQuery();
 			int count = 0;
-			if(rset.next()){
-				count = rset.getInt(1);
+			while(rset.next()){
+				if(!rset.getString("word").matches("[\\.!?\\-;:,'\"\\(\\)]+|<[\\w]+>"))
+					count++;
 			}
 			stmt.close();
 			c.close();
@@ -196,17 +200,49 @@ public class Dictionary {
 		
 	}
 	
+	static void updateWordContext(String word, double[] context){
+		
+		try{
+			Class.forName("org.sqlite.JDBC");
+			Connection c = DriverManager.getConnection("jdbc:sqlite:" + dictName + ".db");
+			PreparedStatement stmt = c.prepareStatement("SELECT * from Words where word=?");
+			stmt.setString(1, word);
+			ResultSet rset = stmt.executeQuery();
+			if(rset.next()){
+				
+				stmt.close();
+				stmt = c.prepareStatement("UPDATE Words set context=? where word=?");
+				stmt.setString(1, Arrays.toString(context));
+				stmt.setString(2, word);
+				stmt.executeUpdate();
+				
+			}
+			stmt.close();
+			c.close();
+		}
+		catch(Exception e){
+			System.err.println(word);
+			e.printStackTrace();
+		}
+		
+	}
+	
 	static String[] mostFreqWordsInit(int size) throws Exception{
 		
 		String[] mostFreq = new String[size];
 		Class.forName("org.sqlite.JDBC");
 		Connection c = DriverManager.getConnection("jdbc:sqlite:" + dictName + ".db");
 		Statement stmt = c.createStatement();
-		ResultSet rset = stmt.executeQuery("select * from Words order by frequency asc");
+		stmt.executeUpdate("drop table Rank");
+		stmt.executeUpdate("create table if not exists Rank (rank real PRIMARY KEY, word text)");
+		stmt.close();
+		stmt = c.createStatement();
+		ResultSet rset = stmt.executeQuery("select * from Words order by frequency desc");
 		for(int i = 0; i < size; i++){
+			
 			if(!rset.next())
 				break;
-			mostFreq[i] = rset.getString(1);
+			mostFreq[i] = rset.getString("word");
 			
 		}
 		stmt.close();
@@ -214,7 +250,7 @@ public class Dictionary {
 		for(int i = 0; i < size; i++){
 			
 			PreparedStatement pstmt = c.prepareStatement("INSERT INTO Rank VALUES (?,?)");
-			pstmt.setInt(1, i);
+			pstmt.setInt(1, i+1);
 			pstmt.setString(2, mostFreq[i]);
 		    pstmt.executeUpdate();
 		    pstmt.close();
@@ -222,6 +258,29 @@ public class Dictionary {
 		}
 		c.close();
 		return mostFreq;
+		
+	}
+	
+	static String[][] returnTaggableVocab() throws Exception{
+		
+		String[][] tagVocab = new String[vocabSize()][3];
+		
+		Class.forName("org.sqlite.JDBC");
+		Connection c = DriverManager.getConnection("jdbc:sqlite:" + dictName + ".db");
+		Statement stmt = c.createStatement();
+		ResultSet rset = stmt.executeQuery("select * from Words");
+		int i = 0;
+		while(rset.next()){
+			String word = rset.getString("word");
+			if(!word.matches("[\\.!?\\-;:,'\"\\(\\)]+|<[\\w]+>")){
+				tagVocab[i][0] = word;
+				tagVocab[i][1] = rset.getString("pos");
+				tagVocab[i][2] = rset.getString("sentences");
+				i++;
+			}
+		}
+		
+		return tagVocab;
 		
 	}
 	
@@ -251,12 +310,14 @@ public class Dictionary {
 		
 	}
 	
+	
 	public static void dropTable() throws Exception{
 		
 		Class.forName("org.sqlite.JDBC");
 		Connection c = DriverManager.getConnection("jdbc:sqlite:" + dictName + ".db");
 		Statement stmt = c.createStatement();
 		stmt.executeUpdate("drop table Words");
+		stmt.executeUpdate("drop table Rank");
 		stmt.close();
 		c.close();
 		
