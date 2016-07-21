@@ -40,10 +40,10 @@ public class Commander {
 					//Parse sentence from console
 					break;
 				case "print":
-					Dictionary.printTable();
+					Librarian.printTable();
 					break;
 				case "drop":
-					Dictionary.dropTable();
+					Librarian.dropTable();
 					break;
 				default:
 			}
@@ -59,7 +59,7 @@ public class Commander {
 
 	public static void selectLanguage(String languageName){
 		
-		Dictionary.connect(languageName);
+		Librarian.connect(languageName);
 		
 	}
 	
@@ -72,7 +72,7 @@ public class Commander {
 		
 		while((line = bufferedReader.readLine()) != null)
 			file = file.concat(line);
-		Reader.read(file);
+		Librarian.read(file);
 		
 		bufferedReader.close();
 		

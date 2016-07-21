@@ -24,27 +24,27 @@ public class Tagger {
 		
 		//Extract X most frequent words
 		int size = 500;
-		String[] mostFreq = Dictionary.mostFreqWordsInit(size);
-		System.out.println("Extracted 500 most frequent words in " + (System.nanoTime() - startTime)/1000000000 + " s.");
+		String[] mostFreq = Librarian.mostFreqWordsInit(size);
+		System.out.println("Extracted 500 most frequent words in " + (System.nanoTime() - startTime) + " ns.");
 		//Construct context vectors
 			//Average distance from X most frequent words
 		//WARNING: we compress entire vocabulary into an array -- could be dangerous for large vocabularies
 		startTime = System.nanoTime();
-		String[][] tagVocab = Dictionary.returnTaggableVocab();
+		String[][] tagVocab = Librarian.returnTaggableVocab();
 		String[] cluster = new String[tagVocab.length];
 		int[] clusterSize = new int[tagVocab.length];
 		double[][] clusterMean = new double[tagVocab.length][500];
 		for(int i = 0; i < tagVocab.length; i++){
 			
 			double[] context = contextVector(tagVocab[i][0], tagVocab[i][2].split(" . "), mostFreq);
-			Dictionary.updateWordContext(tagVocab[i][0], context.clone());
+			Librarian.updateWordContext(tagVocab[i][0], context.clone());
 			//Update cluster arrays
 			cluster[i] = tagVocab[i][1];
 			clusterSize[i] = 1;
 			clusterMean[i] = context;
 			
 		}
-		System.out.println("Constructed context vectors for all words in " + (System.nanoTime() - startTime)/1000000000+ " s.");
+		System.out.println("Constructed context vectors for all words in " + (System.nanoTime() - startTime) + " ns.");
 		//Hierarchical Agglomerative Clustering
 		startTime = System.nanoTime();
 		int clusters = clusterSize.length;
@@ -54,14 +54,14 @@ public class Tagger {
 			clusters--;
 			
 		}
-		System.out.println("Performed first cluster for all words in " + (System.nanoTime() - startTime)/1000000000 + " s.");
+		System.out.println("Performed first cluster for all words in " + (System.nanoTime() - startTime) + " ns.");
 		//Re-distribute clusters appropriately
 		
 		//Prototype and recluster
 		
 		//Update POS in database
 		for(int i = 0; i < tagVocab.length; i++)
-			Dictionary.updateWordPOS(tagVocab[i][0], cluster[i]);
+			Librarian.updateWordPOS(tagVocab[i][0], cluster[i]);
 		
 	}
 	
