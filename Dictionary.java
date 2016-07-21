@@ -11,8 +11,11 @@ public class Dictionary {
 		
 		try{
 			
+			long startTime = System.nanoTime();
 			Class.forName("org.sqlite.JDBC");
 			Connection c = DriverManager.getConnection("jdbc:sqlite:" + dictName + ".db");
+			System.out.println("Connected database in " + (System.nanoTime() - startTime) + " ns.");
+			startTime = System.nanoTime();
 			Statement stmt = c.createStatement();
 		    String sql = "create table if not exists Words (word text PRIMARY KEY, pos text, frequency real, sentences text, context text)";
 		    stmt.executeUpdate(sql);
@@ -22,7 +25,7 @@ public class Dictionary {
 		    stmt.executeUpdate(sql);
 		    stmt.close();
 		    c.close();
-		    System.out.println("Connected database successfully!");
+		    System.out.println("Queried database in " + (System.nanoTime() - startTime) + " ns.");
 		    Dictionary.dictName = dictName;
 			
 		}
@@ -46,83 +49,50 @@ public class Dictionary {
 		
 		//MUST CLEAN UP TO ALLOW WORDS MULTIPLE PARTS OF SPEECH
 		
-		//System.out.println(word  + ": " + sentence);
-		
-		if(wordInDictionary(word))
-			updateWordFrequency(word, sentence);
-		else
-			addWord(word, sentence);
-		
-	}
-	
-	private static void addWord(String word, String sentence){
-		
 		try{
+			
+			//Connect into database
 			Class.forName("org.sqlite.JDBC");
 			Connection c = DriverManager.getConnection("jdbc:sqlite:" + dictName + ".db");
-			PreparedStatement stmt = c.prepareStatement("INSERT INTO Words VALUES (?,?,1,?,NULL)");
-			stmt.setString(1, word);
-			stmt.setString(2, word);
-			stmt.setString(3, sentence + " . ");
-		    stmt.executeUpdate();
-		    stmt.close();
-		    c.close();
-		}
-		catch(Exception e){
-			System.err.println(word);
-			e.printStackTrace();
-		}
-		
-	}
-
-	private static void updateWordFrequency(String word, String sentence){
-		
-		try{
-			Class.forName("org.sqlite.JDBC");
-			Connection c = DriverManager.getConnection("jdbc:sqlite:" + dictName + ".db");
+			//Check if word is in database
 			PreparedStatement stmt = c.prepareStatement("SELECT * from Words where word=?");
 			stmt.setString(1, word);
 			ResultSet rset = stmt.executeQuery();
+			
 			if(rset.next() && !word.matches("[\\.!?\\-;:,'\"\\(\\)]+|<[\\w]+>")){
 				
+				//Retrieve current frequency
 				int frequency = rset.getInt("frequency");
 				sentence = rset.getString("sentences") + sentence + " . ";
 				stmt.close();
 				frequency++;
+				//Update frequency
 				stmt = c.prepareStatement("UPDATE Words set frequency=? , sentences=? where word=?");
 				stmt.setInt(1, frequency);
 				stmt.setString(2, sentence);
 				stmt.setString(3, word);
 				stmt.executeUpdate();
+				stmt.close();
 				
 			}
-			stmt.close();
+			else{
+				
+				//Close the last statement
+				stmt.close();
+				//Insert the word into the table
+				stmt = c.prepareStatement("INSERT INTO Words VALUES (?,?,1,?,NULL)");
+				stmt.setString(1, word);
+				stmt.setString(2, word);
+				stmt.setString(3, sentence + " . ");
+			    stmt.executeUpdate();
+			    stmt.close();
+			}
 			c.close();
+			
 		}
 		catch(Exception e){
 			System.err.println(word);
 			e.printStackTrace();
-		}
-		
-	}
-	
-	private static boolean wordInDictionary(String word){
-		
-		try{
-			Class.forName("org.sqlite.JDBC");
-			Connection c = DriverManager.getConnection("jdbc:sqlite:" + dictName + ".db");
-			PreparedStatement stmt = c.prepareStatement("SELECT * from Words where word=?");
-			stmt.setString(1, word);
-			ResultSet rset = stmt.executeQuery();
-			boolean inDict = rset.next();
-			stmt.close();
-			c.close();
-			return inDict;
-		}
-		catch(Exception e){
-			System.err.println(word);
-			e.printStackTrace();
-			return false;
 		}
 		
 	}
@@ -283,7 +253,7 @@ public class Dictionary {
 	}
 	
 	//Miscellaneous Utility
-	public static void printTable() throws Exception{
+	public static void printTableFull() throws Exception{
 		
 		Class.forName("org.sqlite.JDBC");
 		Connection c = DriverManager.getConnection("jdbc:sqlite:" + dictName + ".db");
@@ -308,6 +278,25 @@ public class Dictionary {
 		
 	}
 	
+	public static void printTable() throws Exception{
+		
+		Class.forName("org.sqlite.JDBC");
+		Connection c = DriverManager.getConnection("jdbc:sqlite:" + dictName + ".db");
+		Statement stmt = c.createStatement();
+		ResultSet rset = stmt.executeQuery("select * from Words order by frequency asc");
+		while (rset.next()) {
+			//Print one row          
+			System.out.print(rset.getString("word") + " "); //Print one element of a row
+			System.out.print(rset.getString("pos") + " "); //Print one element of a row
+
+			System.out.println();//Move to the next line to print the next row.           
+
+		}
+		stmt.close();
+		c.close();
+		
+	}
+	
 	
 	public static void dropTable() throws Exception{
 		
@@ -318,6 +307,8 @@ public class Dictionary {
 		stmt.executeUpdate("drop table Rank");
 		stmt.close();
 		c.close();
+		
+		connect(dictName);
 		
 	}
 	

@@ -39,6 +39,12 @@ public class Commander {
 				case "parse":
 					//Parse sentence from console
 					break;
+				case "print":
+					Dictionary.printTable();
+					break;
+				case "drop":
+					Dictionary.dropTable();
+					break;
 				default:
 			}
 			
@@ -48,7 +54,6 @@ public class Commander {
 		}
 		
 		scan.close();
-		//Dictionary.dropTable();
 		
 	}
 

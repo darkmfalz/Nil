@@ -20,13 +20,16 @@ public class Tagger {
 			
 		}*/
 		
+		long startTime = System.nanoTime();
+		
 		//Extract X most frequent words
 		int size = 500;
 		String[] mostFreq = Dictionary.mostFreqWordsInit(size);
-		System.out.println("Extracted 500 most frequent words successfully!");
+		System.out.println("Extracted 500 most frequent words in " + (System.nanoTime() - startTime)/1000000000 + " s.");
 		//Construct context vectors
 			//Average distance from X most frequent words
 		//WARNING: we compress entire vocabulary into an array -- could be dangerous for large vocabularies
+		startTime = System.nanoTime();
 		String[][] tagVocab = Dictionary.returnTaggableVocab();
 		String[] cluster = new String[tagVocab.length];
 		int[] clusterSize = new int[tagVocab.length];
@@ -41,8 +44,9 @@ public class Tagger {
 			clusterMean[i] = context;
 			
 		}
-		System.out.println("Constructed context vectors for all words succesfully!");
+		System.out.println("Constructed context vectors for all words in " + (System.nanoTime() - startTime)/1000000000+ " s.");
 		//Hierarchical Agglomerative Clustering
+		startTime = System.nanoTime();
 		int clusters = clusterSize.length;
 		while(clusters > Tagger.clusters){
 			
@@ -50,7 +54,7 @@ public class Tagger {
 			clusters--;
 			
 		}
-		System.out.println("Performed first cluster for all words succesfully!");
+		System.out.println("Performed first cluster for all words in " + (System.nanoTime() - startTime)/1000000000 + " s.");
 		//Re-distribute clusters appropriately
 		
 		//Prototype and recluster
@@ -58,8 +62,6 @@ public class Tagger {
 		//Update POS in database
 		for(int i = 0; i < tagVocab.length; i++)
 			Dictionary.updateWordPOS(tagVocab[i][0], cluster[i]);
-		
-		Dictionary.printTable();
 		
 	}
 	
