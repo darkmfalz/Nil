@@ -14,7 +14,7 @@ public class Librarian {
 			long startTime = System.nanoTime();
 			Class.forName("org.sqlite.JDBC");
 			Connection c = DriverManager.getConnection("jdbc:sqlite:" + dictName + ".db");
-			System.out.println("Connected database in " + (System.nanoTime() - startTime) + " ns.");
+			System.out.println("Connected database in " + Commander.convertTime(System.nanoTime() - startTime) + ".");
 			
 			startTime = System.nanoTime();
 			
@@ -34,7 +34,7 @@ public class Librarian {
 		    stmt.close();
 		    
 		    c.close();
-		    System.out.println("Queried database in " + (System.nanoTime() - startTime) + " ns.");
+		    System.out.println("Queried database in " + Commander.convertTime(System.nanoTime() - startTime) + ".");
 		    Librarian.dictName = dictName;
 			
 		}
@@ -61,7 +61,7 @@ public class Librarian {
 		
 		long startTime = System.nanoTime();
 		corpus = preprocess(corpus.toLowerCase());
-		System.out.println("Preprocessed corpus in " + (System.nanoTime() - startTime) + " ns.");
+		System.out.println("Preprocessed corpus in " + Commander.convertTime(System.nanoTime() - startTime) + ".");
 		
 		try{
 			
@@ -133,7 +133,7 @@ public class Librarian {
 				
 			}
 			c.close();
-			System.out.println("Inserted words into database in " + (System.nanoTime() - startTime) + " ns.");
+			System.out.println("Inserted words into database in " + Commander.convertTime(System.nanoTime() - startTime) + ".");
 			
 		}
 		catch(Exception e){

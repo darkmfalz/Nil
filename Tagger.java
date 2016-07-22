@@ -25,7 +25,7 @@ public class Tagger {
 		//Extract X most frequent words
 		int size = 500;
 		String[] mostFreq = Librarian.mostFreqWordsInit(size);
-		System.out.println("Extracted 500 most frequent words in " + (System.nanoTime() - startTime) + " ns.");
+		System.out.println("Extracted 500 most frequent words in " + Commander.convertTime(System.nanoTime() - startTime) + ".");
 		//Construct context vectors
 			//Average distance from X most frequent words
 		//WARNING: we compress entire vocabulary into an array -- could be dangerous for large vocabularies
@@ -44,7 +44,7 @@ public class Tagger {
 			clusterMean[i] = context;
 			
 		}
-		System.out.println("Constructed context vectors for all words in " + (System.nanoTime() - startTime) + " ns.");
+		System.out.println("Constructed context vectors for all words in " + Commander.convertTime(System.nanoTime() - startTime) + ".");
 		//Hierarchical Agglomerative Clustering
 		startTime = System.nanoTime();
 		int clusters = clusterSize.length;
@@ -54,7 +54,7 @@ public class Tagger {
 			clusters--;
 			
 		}
-		System.out.println("Performed first cluster for all words in " + (System.nanoTime() - startTime) + " ns.");
+		System.out.println("Performed first cluster for all words in " + Commander.convertTime(System.nanoTime() - startTime) + ".");
 		//Re-distribute clusters appropriately
 		
 		//Prototype and recluster
