@@ -98,7 +98,7 @@ public class Librarian {
 					stmt.setString(1, word);
 					rset = stmt.executeQuery();
 					
-					if(rset.next()){
+					if(rset.next()  && !word.equals("")){
 						
 						//Retrieve current frequency
 						int frequency = rset.getInt("frequency");
@@ -115,7 +115,7 @@ public class Librarian {
 						stmt.close();
 						
 					}
-					else{
+					else if(!word.equals("")){
 						
 						//Close the last statement
 						stmt.close();
@@ -211,7 +211,7 @@ public class Librarian {
 			ResultSet rset = stmt.executeQuery();
 			int count = 0;
 			while(rset.next()){
-				if(!rset.getString("word").matches("[\\.!?\\-;:,'\"\\(\\)]+|<[\\w]+>"))
+				if(!rset.getString("word").matches("[\\.!?\\-;:,'\"\\(\\)]+|<[\\w]+>") && !rset.getString("word").equals(""))
 					count++;
 			}
 			stmt.close();
@@ -297,7 +297,7 @@ public class Librarian {
 		int i = 0;
 		while(rset.next()){
 			String word = rset.getString("word");
-			if(!word.matches("[\\.!?\\-;:,'\"\\(\\)]+|<[\\w]+>")){
+			if(!word.matches("[\\.!?\\-;:,'\"\\(\\)]+|<[\\w]+>") && !word.equals("")){
 				tagVocab[i][0] = word;
 				tagVocab[i][1] = rset.getString("pos");
 				tagVocab[i][2] = rset.getString("sentences");
@@ -373,7 +373,6 @@ public class Librarian {
 		c.close();
 		
 	}
-	
 	
 	public static void dropTable() throws Exception{
 		

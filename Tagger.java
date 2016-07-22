@@ -32,7 +32,7 @@ public class Tagger {
 		startTime = System.nanoTime();
 		String[][] tagVocab = Librarian.returnTaggableVocab();
 		String[] cluster = new String[tagVocab.length];
-		int[] clusterSize = new int[tagVocab.length];
+		double[] clusterSize = new double[tagVocab.length];
 		double[][] clusterMean = new double[tagVocab.length][500];
 		for(int i = 0; i < tagVocab.length; i++){
 			
@@ -40,7 +40,7 @@ public class Tagger {
 			Librarian.updateWordContext(tagVocab[i][0], context.clone());
 			//Update cluster arrays
 			cluster[i] = tagVocab[i][1];
-			clusterSize[i] = 1;
+			clusterSize[i] = 1.0;
 			clusterMean[i] = context;
 			
 		}
@@ -95,7 +95,7 @@ public class Tagger {
 		
 	}
 
-	private static void mergeWard(String[] cluster, int[] clusterSize, double[][] clusterMean){
+	private static void mergeWard(String[] cluster, double[] clusterSize, double[][] clusterMean){
 		
 		double[] minimumCostMerge = new double[3];
 		minimumCostMerge[0] = Double.MAX_VALUE;
