@@ -25,7 +25,6 @@ public class Tagger {
 		//Extract X most frequent words
 		int size = 500;
 		String[] mostFreq = Librarian.mostFreqWordsInit(size);
-		System.out.println(Arrays.toString(mostFreq));
 		System.out.println("Extracted 500 most frequent words in " + Commander.convertTime(System.nanoTime() - startTime) + ".");
 		//Construct context vectors
 			//Average distance from X most frequent words
@@ -92,7 +91,6 @@ public class Tagger {
 						context[j] =  indexW - indexF;
 					else
 						context[j] =  context[j] * (occurrences[j] - 1) / occurrences[j] + (indexW - indexF) / occurrences[j];
-					allZeros = false;
 					
 				}
 				
