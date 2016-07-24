@@ -36,7 +36,7 @@ public class Tagger {
 		double[][] clusterMean = new double[tagVocab.length][500];
 		for(int i = 0; i < tagVocab.length; i++){
 			
-			double[] context = contextVector(tagVocab[i][0], tagVocab[i][2].split(" . "), mostFreq);
+			double[] context = contextVector(tagVocab[i][0], tagVocab[i][2].split(" [\\.] "), mostFreq);
 			//Reinitialize individual clusters
 			tagVocab[i][1] = tagVocab[i][0];
 			//Update cluster arrays
@@ -132,7 +132,7 @@ public class Tagger {
 		//Merge clusters
 		int i = (int) minimumCostMerge[1];
 		int j = (int) minimumCostMerge[2];
-		//System.out.println("Merged \"" + cluster[i] + "\" and \"" + cluster[j] + "\" at cost " + minimumCostMerge[0] + ".");
+		System.out.println("Merged \"" + cluster[i] + "\" and \"" + cluster[j] + "\" at cost " + minimumCostMerge[0] + ".");
 		cluster[j] = cluster[i];
 		for(int k = 0; k < clusterMean[i].length; k++){
 			

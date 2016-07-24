@@ -77,7 +77,7 @@ public class Librarian {
 			else
 				sentence = 0;
 			stmt.close();
-			String[] sentences = corpus.split(" [.!?] ");
+			String[] sentences = corpus.split(" [\\.!?] |<p>");
 			for(int i = 0; i < sentences.length; i++){
 				
 				//Insert the sentence into the Corpus table
