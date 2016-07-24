@@ -25,6 +25,7 @@ public class Tagger {
 		//Extract X most frequent words
 		int size = 500;
 		String[] mostFreq = Librarian.mostFreqWordsInit(size);
+		System.out.println(Arrays.toString(mostFreq));
 		System.out.println("Extracted 500 most frequent words in " + Commander.convertTime(System.nanoTime() - startTime) + ".");
 		//Construct context vectors
 			//Average distance from X most frequent words
@@ -37,7 +38,8 @@ public class Tagger {
 		for(int i = 0; i < tagVocab.length; i++){
 			
 			double[] context = contextVector(tagVocab[i][0], tagVocab[i][2].split(" . "), mostFreq);
-			Librarian.updateWordContext(tagVocab[i][0], context.clone());
+			//Reinitialize individual clusters
+			tagVocab[i][1] = tagVocab[i][0];
 			//Update cluster arrays
 			cluster[i] = tagVocab[i][1];
 			clusterSize[i] = 1.0;
@@ -52,6 +54,12 @@ public class Tagger {
 			
 			mergeWard(cluster, clusterSize, clusterMean);
 			clusters--;
+			//Cluster re-sync
+			if(clusters <= Tagger.clusters){
+				clusters = Arrays.stream(cluster).distinct().toArray().length;
+				if(clusters <= Tagger.clusters)
+					break;
+			}
 			
 		}
 		System.out.println("Performed first cluster for all words in " + Commander.convertTime(System.nanoTime() - startTime) + ".");
@@ -71,7 +79,7 @@ public class Tagger {
 		int[] occurrences = new int[mostFreq.length];
 		for(int i = 0; i < sentences.length; i++){
 			
-			List<String> sentence = Arrays.asList(sentences[i].split("[//s]+"));
+			List<String> sentence = Arrays.asList(sentences[i].split("[\\s]+"));
 			int indexW = sentence.indexOf(word);
 			//For each of the most frequent words
 			for(int j = 0; j < mostFreq.length; j++){
@@ -84,6 +92,7 @@ public class Tagger {
 						context[j] =  indexW - indexF;
 					else
 						context[j] =  context[j] * (occurrences[j] - 1) / occurrences[j] + (indexW - indexF) / occurrences[j];
+					allZeros = false;
 					
 				}
 				
@@ -100,6 +109,7 @@ public class Tagger {
 		double[] minimumCostMerge = new double[3];
 		minimumCostMerge[0] = Double.MAX_VALUE;
 		
+		theCutie:
 		for(int i = 0; i < cluster.length; i++){
 			
 			for(int j = i + 1; j < cluster.length; j++){
@@ -112,6 +122,9 @@ public class Tagger {
 					minimumCostMerge[1] = i;
 					minimumCostMerge[2] = j;
 					
+					if(cost <= 0)
+						break theCutie;
+					
 				}
 				
 			}
@@ -121,6 +134,7 @@ public class Tagger {
 		//Merge clusters
 		int i = (int) minimumCostMerge[1];
 		int j = (int) minimumCostMerge[2];
+		//System.out.println("Merged \"" + cluster[i] + "\" and \"" + cluster[j] + "\" at cost " + minimumCostMerge[0] + ".");
 		cluster[j] = cluster[i];
 		for(int k = 0; k < clusterMean[i].length; k++){
 			

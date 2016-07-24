@@ -1,7 +1,6 @@
 package nil;
 
 import java.sql.*;
-import java.util.Arrays;
 
 public class Librarian {
 
@@ -19,7 +18,7 @@ public class Librarian {
 			startTime = System.nanoTime();
 			
 			Statement stmt = c.createStatement();
-		    String sql = "create table if not exists Words (word text PRIMARY KEY, pos text, frequency real, sentences text, context text)";
+		    String sql = "create table if not exists Words (word text PRIMARY KEY, pos text, frequency real, sentences text)";
 		    stmt.executeUpdate(sql);
 		    //stmt.close();
 		    
@@ -120,7 +119,7 @@ public class Librarian {
 						//Close the last statement
 						stmt.close();
 						//Insert the word into the table
-						stmt = c.prepareStatement("INSERT INTO Words VALUES (?,?,1,?,NULL)");
+						stmt = c.prepareStatement("INSERT INTO Words VALUES (?,?,1,?)");
 						stmt.setString(1, word);
 						stmt.setString(2, word);
 						stmt.setString(3, Long.toString(sentence) + ";");
@@ -221,33 +220,6 @@ public class Librarian {
 		catch(Exception e){
 			e.printStackTrace();
 			return 0;
-		}
-		
-	}
-	
-	static void updateWordContext(String word, double[] context){
-		
-		try{
-			Class.forName("org.sqlite.JDBC");
-			Connection c = DriverManager.getConnection("jdbc:sqlite:" + dictName + ".db");
-			PreparedStatement stmt = c.prepareStatement("SELECT * from Words where word=?");
-			stmt.setString(1, word);
-			ResultSet rset = stmt.executeQuery();
-			if(rset.next()){
-				
-				stmt.close();
-				stmt = c.prepareStatement("UPDATE Words set context=? where word=?");
-				stmt.setString(1, Arrays.toString(context));
-				stmt.setString(2, word);
-				stmt.executeUpdate();
-				
-			}
-			stmt.close();
-			c.close();
-		}
-		catch(Exception e){
-			System.err.println(word);
-			e.printStackTrace();
 		}
 		
 	}
