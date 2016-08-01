@@ -7,7 +7,7 @@ import java.util.TreeSet;
 //import org.apache.commons.math3.*;
 
 
-public class Tagger {
+public class TaggerDeprecated {
 	
 	private final static int clusters = 8;
 	
@@ -51,7 +51,7 @@ public class Tagger {
 		//Hierarchical Agglomerative Clustering
 		startTime = System.nanoTime();
 		int clusters = clusterSize.length;
-		while(clusters > Tagger.clusters){
+		while(clusters > TaggerDeprecated.clusters){
 			
 			mergeWard(cluster, clusterSize, clusterMean, tagVocab);
 			clusters--;
@@ -63,9 +63,9 @@ public class Tagger {
 				break;
 			}
 			//Cluster re-sync
-			if(clusters <= Tagger.clusters){
+			if(clusters <= TaggerDeprecated.clusters){
 				clusters = Arrays.stream(cluster).distinct().toArray().length;
-				if(clusters <= Tagger.clusters)
+				if(clusters <= TaggerDeprecated.clusters)
 					break;
 			}
 			

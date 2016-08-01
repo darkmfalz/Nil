@@ -273,7 +273,6 @@ public class Librarian {
 				tagVocab[i][0] = word;
 				tagVocab[i][1] = rset.getString("pos");
 				tagVocab[i][2] = rset.getString("sentences");
-				//String[] sentenceIndices = rset.getString("sentences").split(";");
 				i++;
 			}
 		}
@@ -283,7 +282,13 @@ public class Librarian {
 			String[] sentenceIndices = tagVocab[i][2].split(";");
 			String sentences = "";
 			for(int j = 0; j < sentenceIndices.length; j++){
-				
+				//avoid repeat sentences
+				if(j > 0){
+					while(sentenceIndices[j] == sentenceIndices[j-1])
+						j++;
+					if(j >= sentenceIndices.length)
+						break;
+				}
 				PreparedStatement pstmt = c.prepareStatement("SELECT * from Corpus where dex=?");
 				pstmt.setString(1, sentenceIndices[j]);
 				rset = pstmt.executeQuery();
