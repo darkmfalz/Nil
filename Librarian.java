@@ -1,6 +1,7 @@
 package nil;
 
 import java.sql.*;
+import java.util.HashMap;
 
 public class Librarian {
 
@@ -258,48 +259,21 @@ public class Librarian {
 		
 	}
 	
-	static String[][] returnTaggableVocab() throws Exception{
+	static HashMap<String, String> returnTaggableVocab() throws Exception{
 		
-		String[][] tagVocab = new String[vocabSize()][3];
+		HashMap<String, String> tagVocab = new HashMap<String, String>();
 		
 		Class.forName("org.sqlite.JDBC");
 		Connection c = DriverManager.getConnection("jdbc:sqlite:" + dictName + ".db");
 		Statement stmt = c.createStatement();
-		ResultSet rset = stmt.executeQuery("select * from Words");
-		int i = 0;
+		ResultSet rset = stmt.executeQuery("select word from Words");
 		while(rset.next()){
 			String word = rset.getString("word");
 			if(!word.matches("[\\.!?\\-;:,'\"\\(\\)]+|<[\\w]+>") && !word.equals("")){
-				tagVocab[i][0] = word;
-				tagVocab[i][1] = rset.getString("pos");
-				tagVocab[i][2] = rset.getString("sentences");
-				i++;
+				tagVocab.put(word, word);
 			}
 		}
 		stmt.close();
-		for(i = 0; i < tagVocab.length; i++){
-			
-			String[] sentenceIndices = tagVocab[i][2].split(";");
-			String sentences = "";
-			for(int j = 0; j < sentenceIndices.length; j++){
-				//avoid repeat sentences
-				if(j > 0){
-					while(sentenceIndices[j] == sentenceIndices[j-1])
-						j++;
-					if(j >= sentenceIndices.length)
-						break;
-				}
-				PreparedStatement pstmt = c.prepareStatement("SELECT * from Corpus where dex=?");
-				pstmt.setString(1, sentenceIndices[j]);
-				rset = pstmt.executeQuery();
-				if(rset.next())
-					sentences = sentences + rset.getString("sentence") + " . ";
-				pstmt.close();
-				
-			}
-			tagVocab[i][2] = sentences;
-			
-		}
 		c.close();
 		
 		return tagVocab;

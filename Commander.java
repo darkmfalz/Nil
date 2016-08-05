@@ -34,7 +34,7 @@ public class Commander {
 					}
 					break;
 				case "tag":
-					TaggerDeprecated.hierachicalCluster();
+					Tagger.brownCluster();
 					break;
 				case "parse":
 					//Parse sentence from console
