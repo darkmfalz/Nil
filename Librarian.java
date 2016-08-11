@@ -192,6 +192,7 @@ public class Librarian {
 				//int indexI = indices.get(words[i]);
 				//double n = ++frequency[indexI];
 				
+				//Positive frequencies for the forward bigram
 				if(!probabilityMap.containsKey(words[i])){
 					probabilityMap.put(words[i], new HashMap<String, Double>());
 				}
@@ -210,6 +211,15 @@ public class Librarian {
 						probabilityMap.get(words[i]).put(currentMap[j], probabilityMap.get(words[i]).get(currentMap[j]) * (n - 1)/n + 1.0/n);
 					
 				}*/
+				//Negative frequencies for the reverse bigram
+				if(!probabilityMap.containsKey(words[i+1])){
+					probabilityMap.put(words[i+1], new HashMap<String, Double>());
+				}
+				if(!probabilityMap.get(words[i+1]).containsKey(words[i])){
+					probabilityMap.get(words[i+1]).put(words[i], new Double(0.0));
+				}
+				currFreq = probabilityMap.get(words[i+1]).get(words[i]);
+				probabilityMap.get(words[i+1]).put(words[i], currFreq - 1.0);
 				
 			}
 		}
@@ -328,9 +338,9 @@ public class Librarian {
 		
 	}
 	
-	static HashMap<String, String> returnTaggableVocab() throws Exception{
+	static HashMap<String, ArrayList<String>> returnTaggableVocab() throws Exception{
 		
-		HashMap<String, String> tagVocab = new HashMap<String, String>();
+		HashMap<String, ArrayList<String>> tagVocab = new HashMap<String, ArrayList<String>>();
 		
 		Class.forName("org.sqlite.JDBC");
 		Connection c = DriverManager.getConnection("jdbc:sqlite:" + dictName + ".db");
@@ -339,7 +349,9 @@ public class Librarian {
 		while(rset.next()){
 			String word = rset.getString("word");
 			if(!word.matches("[\\.!?\\-;:,'\"\\(\\)]+|<[\\w]+>") && !word.equals("")){
-				tagVocab.put(word, word);
+				ArrayList<String> curr = new ArrayList<String>();
+				curr.add(word);
+				tagVocab.put(word, curr);
 			}
 		}
 		stmt.close();
