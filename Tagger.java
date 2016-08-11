@@ -34,7 +34,7 @@ public class Tagger {
 			rProbabilityMap.put(words[i], new HashMap<String, Double>());
 			for(int j = 0; j < words.length; j++){
 				
-				if(lProbabilityMap.get(words[j]).containsKey(words[i]))
+				if(lProbabilityMap.containsKey(words[j]) && lProbabilityMap.get(words[j]).containsKey(words[i]))
 					rProbabilityMap.get(words[i]).put(words[j], lProbabilityMap.get(words[j]).get(words[i]));
 				
 			}
@@ -65,6 +65,12 @@ public class Tagger {
 	
 	private static double qCalculation(HashMap<String, HashMap<String, Double>> lProbabilityMap, HashMap<String, HashMap<String, Double>> rProbabilityMap, String l, String m){
 		
+		if(!lProbabilityMap.containsKey(l) || !lProbabilityMap.get(l).containsKey(m))
+			return 0.0;
+		
+		if(!rProbabilityMap.containsKey(m) || !rProbabilityMap.get(m).containsKey(l))
+			return 0.0;
+		
 		double p = lProbabilityMap.get(l).get(m);
 		double leftP = 0.0;
 		double rightP = 0.0;
@@ -91,15 +97,15 @@ public class Tagger {
 			
 			for(int j = 0; j < keyArray.length; j++){
 				
-				if(lProbabilityMap.get(keyArray[i]).containsKey(keyArray[j]))
+				if(lProbabilityMap.containsKey(keyArray[i]) && lProbabilityMap.get(keyArray[i]).containsKey(keyArray[j]))
 					s += qCalculation(lProbabilityMap, rProbabilityMap, keyArray[i], keyArray[j]);
 				
-				if(lProbabilityMap.get(keyArray[j]).containsKey(keyArray[i]))
+				if(lProbabilityMap.containsKey(keyArray[j]) && lProbabilityMap.get(keyArray[j]).containsKey(keyArray[i]))
 					s += qCalculation(lProbabilityMap, rProbabilityMap, keyArray[j], keyArray[i]);
 				
 			}
 			
-			if(lProbabilityMap.get(keyArray[i]).containsKey(keyArray[i]))
+			if(lProbabilityMap.containsKey(keyArray[i]) && lProbabilityMap.get(keyArray[i]).containsKey(keyArray[i]))
 				s -= qCalculation(lProbabilityMap, rProbabilityMap, keyArray[i], keyArray[i]);
 			
 			sMap.put(keyArray[i], s);
@@ -124,38 +130,54 @@ public class Tagger {
 				double changeInformationTemp = -1.0*sMap.get(keys[i]) - sMap.get(keys[j]) + qCalculation(lProbabilityMap, rProbabilityMap, keys[i], keys[j]) + qCalculation(lProbabilityMap, rProbabilityMap, keys[j], keys[i]);
 				//p_k(i+j, i+j)
 				double p = 0.0;
-				if(lProbabilityMap.get(keys[i]).containsKey(keys[i]))
+				if(lProbabilityMap.containsKey(keys[i]) && lProbabilityMap.get(keys[i]).containsKey(keys[i]))
 					p += lProbabilityMap.get(keys[i]).get(keys[i]);
-				if(lProbabilityMap.get(keys[i]).containsKey(keys[j]))
+				if(lProbabilityMap.containsKey(keys[i]) && lProbabilityMap.get(keys[i]).containsKey(keys[j]))
 					p += lProbabilityMap.get(keys[i]).get(keys[j]);
-				if(lProbabilityMap.get(keys[j]).containsKey(keys[j]))
+				if(lProbabilityMap.containsKey(keys[j]) && lProbabilityMap.get(keys[j]).containsKey(keys[j]))
 					p += lProbabilityMap.get(keys[j]).get(keys[j]);
-				if(lProbabilityMap.get(keys[j]).containsKey(keys[i]))
+				if(lProbabilityMap.containsKey(keys[j]) && lProbabilityMap.get(keys[j]).containsKey(keys[i]))
 					p += lProbabilityMap.get(keys[j]).get(keys[i]);
 				//Left and Right p for q_k(i+j, i+j)
 				double leftP = 0.0;
 				double rightP = 0.0;
-				HashMap<String, Double> part = lProbabilityMap.get(keys[i]);
-				Iterator<Double> partIterator = part.values().iterator();
-				while(partIterator.hasNext())
-					leftP += partIterator.next();
-				part = rProbabilityMap.get(keys[i]);
-				partIterator = part.values().iterator();
-				while(partIterator.hasNext())
-					rightP += partIterator.next();
+				if(lProbabilityMap.containsKey(keys[i])){
+					HashMap<String, Double> part = lProbabilityMap.get(keys[i]);
+					Iterator<Double> partIterator = part.values().iterator();
+					while(partIterator.hasNext())
+						leftP += partIterator.next();
+				}
 				
-				part = lProbabilityMap.get(keys[j]);
-				partIterator = part.values().iterator();
-				while(partIterator.hasNext())
-					leftP += partIterator.next();
-				part = rProbabilityMap.get(keys[j]);
-				partIterator = part.values().iterator();
-				while(partIterator.hasNext())
-					rightP += partIterator.next();
+				if(rProbabilityMap.containsKey(keys[i])){
+					HashMap<String, Double> part = rProbabilityMap.get(keys[i]);
+					Iterator<Double> partIterator = part.values().iterator();
+					while(partIterator.hasNext())
+						rightP += partIterator.next();
+				}
+				
+				if(lProbabilityMap.containsKey(keys[j])){
+					HashMap<String, Double> part = lProbabilityMap.get(keys[j]);
+					Iterator<Double> partIterator = part.values().iterator();
+					while(partIterator.hasNext())
+						leftP += partIterator.next();
+				}
+				
+				if(rProbabilityMap.containsKey(keys[j])){
+					HashMap<String, Double> part = rProbabilityMap.get(keys[j]);
+					Iterator<Double> partIterator = part.values().iterator();
+					while(partIterator.hasNext())
+						rightP += partIterator.next();
+				}
 				
 				double q = 0.0;
 				if(p > 0.0)
 					q =  (p * Math.log(p / (leftP * rightP)));
+				else{
+					
+					leftP = 1.0;
+					rightP = 1.0;
+					
+				}
 				changeInformationTemp += q;
 				//q_l
 				q = 0.0;
@@ -164,35 +186,35 @@ public class Tagger {
 					if(i != k && j != k){
 						
 						p = 0.0;
-						if(lProbabilityMap.get(keys[k]).containsKey(keys[i]))
+						if(lProbabilityMap.containsKey(keys[k]) && lProbabilityMap.get(keys[k]).containsKey(keys[i]))
 							p += lProbabilityMap.get(keys[k]).get(keys[i]);
-						if(lProbabilityMap.get(keys[k]).containsKey(keys[j]))
+						if(lProbabilityMap.containsKey(keys[k]) && lProbabilityMap.get(keys[k]).containsKey(keys[j]))
 							p += lProbabilityMap.get(keys[k]).get(keys[j]);
 						
 						if(p > 0.0){
 							
 							double leftPTemp = 0.0;
-							part = lProbabilityMap.get(keys[k]);
-							partIterator = part.values().iterator();
+							HashMap<String, Double> part = lProbabilityMap.get(keys[k]);
+							Iterator<Double> partIterator = part.values().iterator();
 							while(partIterator.hasNext())
-								leftP += partIterator.next();
+								leftPTemp += partIterator.next();
 							q += (p * Math.log(p / (leftPTemp * rightP)));
 							
 						}
 						
 						p = 0.0;
-						if(lProbabilityMap.get(keys[i]).containsKey(keys[k]))
+						if(lProbabilityMap.containsKey(keys[i]) && lProbabilityMap.get(keys[i]).containsKey(keys[k]))
 							p += lProbabilityMap.get(keys[i]).get(keys[k]);
-						if(lProbabilityMap.get(keys[j]).containsKey(keys[k]))
+						if(lProbabilityMap.containsKey(keys[j]) && lProbabilityMap.get(keys[j]).containsKey(keys[k]))
 							p += lProbabilityMap.get(keys[j]).get(keys[k]);
 						
 						if(p > 0.0){
 							
 							double rightPTemp = 0.0;
-							part = rProbabilityMap.get(keys[k]);
-							partIterator = part.values().iterator();
+							HashMap<String, Double> part = rProbabilityMap.get(keys[k]);
+							Iterator<Double> partIterator = part.values().iterator();
 							while(partIterator.hasNext())
-								rightP += partIterator.next();
+								rightPTemp += partIterator.next();
 							q += (p * Math.log(p / (leftP * rightPTemp)));
 							
 						}
@@ -239,33 +261,35 @@ public class Tagger {
 			if(!word.equals(cluster1) && !word.equals(cluster2)){
 				
 				//left-bigram
-				if(lProbabilityMap.get(word).containsKey(cluster1) && lProbabilityMap.get(word).containsKey(cluster2)){
+				if(lProbabilityMap.containsKey(word) && lProbabilityMap.get(word).containsKey(cluster1) && lProbabilityMap.get(word).containsKey(cluster2)){
 					double p = lProbabilityMap.get(word).get(cluster1);
 					p += lProbabilityMap.get(word).get(cluster2);
 					lProbabilityMap.get(word).put(cluster1, p);
 					lProbabilityMap.get(word).remove(cluster2);
 					rProbabilityMap.get(cluster1).put(word, p);
 				}
-				else if(lProbabilityMap.get(word).containsKey(cluster2)){
+				else if(lProbabilityMap.containsKey(word) && lProbabilityMap.get(word).containsKey(cluster2)){
 					double p = lProbabilityMap.get(word).get(cluster2);
 					lProbabilityMap.get(word).put(cluster1, p);
 					lProbabilityMap.get(word).remove(cluster2);
 					rProbabilityMap.get(cluster1).put(word, p);
 				}
-				else if(lProbabilityMap.get(word).containsKey(cluster1))
+				else if(lProbabilityMap.containsKey(word) && lProbabilityMap.get(word).containsKey(cluster1))
 					rProbabilityMap.get(cluster1).put(word, lProbabilityMap.get(word).get(cluster1));
 				
 				//right-bigram
-				if(rProbabilityMap.get(word).containsKey(cluster1) && rProbabilityMap.get(word).containsKey(cluster2)){
+				if(rProbabilityMap.containsKey(word) && rProbabilityMap.get(word).containsKey(cluster1) && rProbabilityMap.get(word).containsKey(cluster2)){
 					double p = rProbabilityMap.get(word).get(cluster1);
 					p += rProbabilityMap.get(word).get(cluster2);
 					rProbabilityMap.get(word).put(cluster1, p);
 					rProbabilityMap.get(word).remove(cluster2);
 				}
-				else if(rProbabilityMap.get(word).containsKey(cluster2)){
+				else if(rProbabilityMap.containsKey(word) && rProbabilityMap.get(word).containsKey(cluster2)){
 					rProbabilityMap.get(word).put(cluster1, lProbabilityMap.get(word).get(cluster2));
 					rProbabilityMap.get(word).remove(cluster2);
 				}
+				else if(rProbabilityMap.containsKey(word) && rProbabilityMap.get(word).containsKey(cluster1))
+					lProbabilityMap.get(cluster1).put(word, rProbabilityMap.get(word).get(cluster1));
 				
 			}
 			
@@ -365,6 +389,8 @@ public class Tagger {
 		newSMap.put(cluster1, s);
 		
 		sMap = newSMap;
+		
+		System.out.println(cluster1 + " " +  cluster2);
 		
 	}
 	
