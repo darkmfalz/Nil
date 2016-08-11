@@ -220,38 +220,151 @@ public class Tagger {
 		tagVocab.get(cluster1).addAll(tagVocab.get(cluster2));
 		tagVocab.remove(cluster2);
 		//update probabilityMap
+		HashMap<String, Double> lProbabilityCluster1 = lProbabilityMap.get(cluster1);
+		lProbabilityMap.remove(cluster1);
+		HashMap<String, Double> rProbabilityCluster1 = rProbabilityMap.get(cluster1);
+		rProbabilityMap.remove(cluster1);
+		HashMap<String, Double> lProbabilityCluster2 = lProbabilityMap.get(cluster2);
+		lProbabilityMap.remove(cluster2);
+		HashMap<String, Double> rProbabilityCluster2 = rProbabilityMap.get(cluster2);
+		rProbabilityMap.remove(cluster2);
+		
+		lProbabilityMap.put(cluster1, new HashMap<String, Double>());
+		rProbabilityMap.put(cluster1, new HashMap<String, Double>());
+		
 		Iterator<String> iterator = tagVocab.keySet().iterator();
 		while(iterator.hasNext()){
 			
 			String word = iterator.next();
 			if(!word.equals(cluster1) && !word.equals(cluster2)){
 				
-				if(probabilityMap.get(word).containsKey(cluster1) && probabilityMap.get(word).containsKey(cluster2)){
-					double p = 0.0;
-					p += probabilityMap.get(word).get(cluster1);
-					p += probabilityMap.get(word).get(cluster2);
-					probabilityMap.get(word).put(cluster1, p);
-					probabilityMap.get(word).remove(cluster2);
+				//left-bigram
+				if(lProbabilityMap.get(word).containsKey(cluster1) && lProbabilityMap.get(word).containsKey(cluster2)){
+					double p = lProbabilityMap.get(word).get(cluster1);
+					p += lProbabilityMap.get(word).get(cluster2);
+					lProbabilityMap.get(word).put(cluster1, p);
+					lProbabilityMap.get(word).remove(cluster2);
+					rProbabilityMap.get(cluster1).put(word, p);
 				}
-				else if(probabilityMap.get(word).containsKey(cluster2)){
-					probabilityMap.get(word).put(cluster1, probabilityMap.get(word).get(cluster2));
-					probabilityMap.get(word).remove(cluster2);
+				else if(lProbabilityMap.get(word).containsKey(cluster2)){
+					double p = lProbabilityMap.get(word).get(cluster2);
+					lProbabilityMap.get(word).put(cluster1, p);
+					lProbabilityMap.get(word).remove(cluster2);
+					rProbabilityMap.get(cluster1).put(word, p);
+				}
+				else if(lProbabilityMap.get(word).containsKey(cluster1))
+					rProbabilityMap.get(cluster1).put(word, lProbabilityMap.get(word).get(cluster1));
+				
+				//right-bigram
+				if(rProbabilityMap.get(word).containsKey(cluster1) && rProbabilityMap.get(word).containsKey(cluster2)){
+					double p = rProbabilityMap.get(word).get(cluster1);
+					p += rProbabilityMap.get(word).get(cluster2);
+					rProbabilityMap.get(word).put(cluster1, p);
+					rProbabilityMap.get(word).remove(cluster2);
+				}
+				else if(rProbabilityMap.get(word).containsKey(cluster2)){
+					rProbabilityMap.get(word).put(cluster1, lProbabilityMap.get(word).get(cluster2));
+					rProbabilityMap.get(word).remove(cluster2);
 				}
 				
 			}
 			
 		}
 		double p = 0.0;
-		if(probabilityMap.get(cluster1).containsKey(cluster1))
-			p += probabilityMap.get(cluster1).get(cluster1);
-		if(probabilityMap.get(cluster1).containsKey(cluster2))
-			p += probabilityMap.get(cluster1).get(cluster2);
-		if(probabilityMap.get(cluster2).containsKey(cluster2))
-			p += probabilityMap.get(cluster2).get(cluster2);
-		if(probabilityMap.get(cluster2).containsKey(cluster1))
-			p += probabilityMap.get(cluster2).get(cluster1);
-		probabilityMap.remove(cluster2);
+		if(lProbabilityCluster1.containsKey(cluster1))
+			p += lProbabilityCluster1.get(cluster1);
+		if(lProbabilityCluster1.containsKey(cluster2))
+			p += lProbabilityCluster1.get(cluster2);
+		if(lProbabilityCluster2.containsKey(cluster2))
+			p += lProbabilityCluster2.get(cluster2);
+		if(lProbabilityCluster2.containsKey(cluster1))
+			p += lProbabilityCluster2.get(cluster1);
+		if(p > 0.0){
+			
+			lProbabilityMap.get(cluster1).put(cluster1, p);
+			rProbabilityMap.get(cluster1).put(cluster1, p);
+			
+		}
 		//update sMap
+		HashMap<String, Double> newSMap = new HashMap<String, Double>();
+		iterator = sMap.keySet().iterator();
+		while(iterator.hasNext()){
+			
+			String cluster = iterator.next();
+			if(!cluster.equals(cluster2)){
+				
+				double s = 0.0;
+				if(!cluster.equals(cluster1)){
+					
+					s = sMap.get(cluster) + qCalculation(lProbabilityMap, rProbabilityMap, cluster, cluster1) + qCalculation(lProbabilityMap, rProbabilityMap, cluster1, cluster);
+					
+					double leftPCluster = 0.0;
+					double rightPCluster = 0.0;
+					HashMap<String, Double> part = lProbabilityMap.get(cluster);
+					Iterator<Double> partIterator = part.values().iterator();
+					while(partIterator.hasNext())
+						leftPCluster += partIterator.next();
+					part = rProbabilityMap.get(cluster);
+					partIterator = part.values().iterator();
+					while(partIterator.hasNext())
+						rightPCluster += partIterator.next();
+					
+					//cluster - cluster1
+					p = rProbabilityCluster1.get(cluster);
+					double rightP = 0.0;
+					partIterator = rProbabilityCluster1.values().iterator();
+					while(partIterator.hasNext())
+						rightP += partIterator.next();
+					s -= (p * Math.log(p / (leftPCluster * rightP)));
+					//cluster1 - cluster
+					p = lProbabilityCluster1.get(cluster);
+					double leftP = 0.0;
+					partIterator = lProbabilityCluster1.values().iterator();
+					while(partIterator.hasNext())
+						leftP += partIterator.next();
+					s -= (p * Math.log(p / (leftP * rightPCluster)));
+					//cluster - cluster2
+					p = rProbabilityCluster2.get(cluster);
+					rightP = 0.0;
+					partIterator = rProbabilityCluster2.values().iterator();
+					while(partIterator.hasNext())
+						rightP += partIterator.next();
+					s -= (p * Math.log(p / (leftPCluster * rightP)));
+					//cluster2 - cluster
+					p = lProbabilityCluster2.get(cluster);
+					leftP = 0.0;
+					partIterator = lProbabilityCluster2.values().iterator();
+					while(partIterator.hasNext())
+						leftP += partIterator.next();
+					s -= (p * Math.log(p / (leftP * rightPCluster)));
+					
+					newSMap.put(cluster, s);
+					
+				}
+				
+			}
+			
+		}
+		
+		double s = 0.0;
+		iterator = newSMap.keySet().iterator();
+		while(iterator.hasNext()){
+			
+			String word = iterator.next();
+			
+			if(lProbabilityMap.get(cluster1).containsKey(word))
+				s += qCalculation(lProbabilityMap, rProbabilityMap, cluster1, word);
+			
+			if(lProbabilityMap.get(word).containsKey(cluster1))
+				s += qCalculation(lProbabilityMap, rProbabilityMap, word, cluster1);
+			
+		}
+		
+		if(lProbabilityMap.get(cluster1).containsKey(cluster1))
+			s -= qCalculation(lProbabilityMap, rProbabilityMap, cluster1, cluster1);
+		newSMap.put(cluster1, s);
+		
+		sMap = newSMap;
 		
 	}
 	
