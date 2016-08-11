@@ -160,21 +160,9 @@ public class Librarian {
 		HashMap<String, HashMap<String, Double>> probabilityMap = new HashMap<String, HashMap<String, Double>>();
 		Class.forName("org.sqlite.JDBC");
 		Connection c = DriverManager.getConnection("jdbc:sqlite:" + dictName + ".db");
-		Statement stmt = c.createStatement();
-		ResultSet rset = stmt.executeQuery("select word from Words order by word asc");
-		//String compareTo() reveals the same order as this method
-		HashMap<String, Integer> indices = new HashMap<String, Integer>();
-		int i = 0;
-		while(rset.next()){
-			String word = rset.getString("word");
-			if(!word.matches("[\\.!?\\-;:,'\"\\(\\)]+|<[\\w]+>") && !word.equals("")){
-				indices.put(word, i);
-				i++;
-			}
-		}
 		//actually update probabilityMap
-		stmt = c.createStatement();
-		rset = stmt.executeQuery("select sentence from Corpus");
+		Statement stmt = c.createStatement();
+		ResultSet rset = stmt.executeQuery("select sentence from Corpus");
 		//double[] frequency = new double[V];
 		while(rset.next()){
 			String sentence = rset.getString("sentence");
@@ -182,12 +170,12 @@ public class Librarian {
 			//Split the sentence into string array
 			String[] wordsFirst = sentence.split("[\\s]+");
 			ArrayList<String> wordsTemp = new ArrayList<String>();
-			for(i = 0; i < wordsFirst.length; i++)
+			for(int i = 0; i < wordsFirst.length; i++)
 				if(!wordsFirst[i].matches("[\\.!?\\-;:,'\"\\(\\)]+|<[\\w]+>") && !wordsFirst[i].equals(""))
 					wordsTemp.add(wordsFirst[i]);
 			String[] words = wordsTemp.toArray(new String[0]);
 			
-			for(i = 0; i < words.length - 1; i++){
+			for(int i = 0; i < words.length - 1; i++){
 				
 				//int indexI = indices.get(words[i]);
 				//double n = ++frequency[indexI];
@@ -211,15 +199,6 @@ public class Librarian {
 						probabilityMap.get(words[i]).put(currentMap[j], probabilityMap.get(words[i]).get(currentMap[j]) * (n - 1)/n + 1.0/n);
 					
 				}*/
-				//Negative frequencies for the reverse bigram
-				if(!probabilityMap.containsKey(words[i+1])){
-					probabilityMap.put(words[i+1], new HashMap<String, Double>());
-				}
-				if(!probabilityMap.get(words[i+1]).containsKey(words[i])){
-					probabilityMap.get(words[i+1]).put(words[i], new Double(0.0));
-				}
-				currFreq = probabilityMap.get(words[i+1]).get(words[i]);
-				probabilityMap.get(words[i+1]).put(words[i], currFreq - 1.0);
 				
 			}
 		}
