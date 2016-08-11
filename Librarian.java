@@ -156,7 +156,7 @@ public class Librarian {
 	
 	public static HashMap<String, HashMap<String, Double>> returnProbabilityMap() throws Exception{
 		
-		final int V = vocabSize();
+		//final int V = vocabSize();
 		HashMap<String, HashMap<String, Double>> probabilityMap = new HashMap<String, HashMap<String, Double>>();
 		Class.forName("org.sqlite.JDBC");
 		Connection c = DriverManager.getConnection("jdbc:sqlite:" + dictName + ".db");
@@ -175,9 +175,10 @@ public class Librarian {
 		//actually update probabilityMap
 		stmt = c.createStatement();
 		rset = stmt.executeQuery("select sentence from Corpus");
-		double[] frequency = new double[V];
+		//double[] frequency = new double[V];
 		while(rset.next()){
 			String sentence = rset.getString("sentence");
+			
 			//Split the sentence into string array
 			String[] wordsFirst = sentence.split("[\\s]+");
 			ArrayList<String> wordsTemp = new ArrayList<String>();
@@ -188,14 +189,18 @@ public class Librarian {
 			
 			for(i = 0; i < words.length - 1; i++){
 				
-				int indexI = indices.get(words[i]);
-				double n = ++frequency[indexI];
+				//int indexI = indices.get(words[i]);
+				//double n = ++frequency[indexI];
 				
-				if(!probabilityMap.containsKey(words[i]))
+				if(!probabilityMap.containsKey(words[i])){
 					probabilityMap.put(words[i], new HashMap<String, Double>());
-				if(!probabilityMap.get(words[i]).containsKey(words[i+1]))
-					probabilityMap.get(words[i]).put(words[i+1], 0.0);
-				String[] currentMap = probabilityMap.get(words[i]).keySet().toArray(new String[0]);
+				}
+				if(!probabilityMap.get(words[i]).containsKey(words[i+1])){
+					probabilityMap.get(words[i]).put(words[i+1], new Double(0.0));
+				}
+				double currFreq = probabilityMap.get(words[i]).get(words[i+1]);
+				probabilityMap.get(words[i]).put(words[i+1], currFreq + 1.0);
+				/*String[] currentMap = probabilityMap.get(words[i]).keySet().toArray(new String[0]);
 				
 				for(int j = 0; j < currentMap.length; j++){
 					
@@ -204,12 +209,12 @@ public class Librarian {
 					else
 						probabilityMap.get(words[i]).put(currentMap[j], probabilityMap.get(words[i]).get(currentMap[j]) * (n - 1)/n + 1.0/n);
 					
-				}
+				}*/
 				
 			}
 		}
 		
-		System.out.println(probabilityMap.toString());
+		//System.out.println(probabilityMap.toString());
 		
 		stmt.close();
 		c.close();
@@ -396,6 +401,7 @@ public class Librarian {
 		Statement stmt = c.createStatement();
 		stmt.executeUpdate("drop table Words");
 		stmt.executeUpdate("drop table Rank");
+		stmt.executeUpdate("drop table Corpus");
 		stmt.close();
 		c.close();
 		
